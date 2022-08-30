@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup # import BeautifulSoup
 import requests # import requests
+import json # import json
 
 # create request to archive page
 blog_archive_url = 'https://enlear.academy/archive/2022/01'
@@ -9,6 +10,8 @@ parsedHtml = BeautifulSoup(response.text, 'html.parser')
 
 # get list of all divs having the classes "streamItem streamItem--postPreview js-streamItem" to get each story.
 stories = parsedHtml.find_all('div', class_='streamItem streamItem--postPreview js-streamItem')
+
+formatted_stories = []
 
 for story in stories:
     # get the title of the story
@@ -28,7 +31,18 @@ for story in stories:
     # access the reading time span element and get its title attribute
     reading_time = author_header.find('span', class_='readingTime')['title']
 
-    print(story_title)
-    print(story_subtitle)
-    print(claps)
-    print(reading_time)
+    # get read more ref
+    read_more_ref = story.find('a', class_='button button--smaller button--chromeless u-baseColor--buttonNormal')
+    url = read_more_ref['href'] if read_more_ref else 'N/A'
+
+    # add an object to formatted_stories
+    formatted_stories.append({
+        'title': story_title,
+        'subtitle': story_subtitle,
+        'claps': claps,
+        'reading_time': reading_time,
+        'url': url
+    })
+
+file = open('stories.json', 'w')
+file.write(json.dumps(formatted_stories))
